@@ -12,8 +12,9 @@
 </template>
 
 <script lang="ts">
-  import Vue from "nativescript-vue";
-  import DeviceList from "@/components/DeviceList.vue";
+  import Vue from "nativescript-vue"
+  import { Utils } from "@nativescript/core"
+  import DeviceList from "@/components/DeviceList.vue"
 
   export default Vue.extend({
     computed: {
@@ -30,6 +31,19 @@
       goToDevices() {
         this.$navigateTo(DeviceList)
       }
+    },
+
+    mounted() {
+      const context = Utils.android.getApplicationContext()
+      const wifiManager = context.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+
+      const ipInt = wifiManager.getConnectionInfo().getIpAddress()
+      const ip = (ipInt & 0xff) + "." + ((ipInt >> 8) & 0xff) + "." + ((ipInt >> 16) & 0xff) + "." + ((ipInt >> 24) & 0xff)
+      console.log("Local IP:", ip)
+
+      const dhcp = wifiManager.getDhcpInfo()
+      const gateway = (dhcp.gateway & 0xff) + "." + ((dhcp.gateway >> 8) & 0xff) + "." + ((dhcp.gateway >> 16) & 0xff) + "." + ((dhcp.gateway >> 24) & 0xff)
+      console.log("Gateway:", gateway)
     }
   });
 </script>

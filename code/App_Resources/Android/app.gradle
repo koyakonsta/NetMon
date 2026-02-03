@@ -4,22 +4,27 @@ dependencies {
 }
 
 android {
-  compileSdkVersion 35
-  buildToolsVersion "35"
-  // ndkVersion ""
+    compileSdkVersion 35
+    buildToolsVersion "35"
+    // ndkVersion ""
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
 
-  defaultConfig {
+    defaultConfig {
     minSdkVersion 24
     targetSdkVersion 35
 
     // Version Information
     versionCode 1
     versionName "1.0.0"
-    
-    generatedDensities = []
-  }
 
-  aaptOptions {
-    additionalParameters "--no-version-vectors"
-  }
+    generatedDensities = []
+    }
+
+    aaptOptions {
+        additionalParameters "--no-version-vectors"
+    }
 }

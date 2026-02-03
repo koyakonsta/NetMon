@@ -7,14 +7,16 @@
 
     <StackLayout>
       <Label class="text-xl align-middle text-center text-gray-500" :text="message" @tap="logMessage" />
+      <Button text="Scan Network" col="1" @tap="netutils.runNmapScan()"></Button>
     </StackLayout>
   </Page>
 </template>
 
 <script lang="ts">
-  import Vue from "nativescript-vue"
+  import Vue from "nativescript-vue";
+  import DeviceList from "@/components/DeviceList.vue";
   import { Utils } from "@nativescript/core"
-  import DeviceList from "@/components/DeviceList.vue"
+  import * as netutils from "~/netutils";
 
   export default Vue.extend({
     computed: {
@@ -22,7 +24,11 @@
         return "This is the homepage";
       },
     },
-
+    data() {
+      return {
+        netutils: netutils,
+      }
+    },
     methods: {
       logMessage() {
         console.log('You have tapped the message!')

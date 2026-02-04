@@ -8,7 +8,6 @@
     <StackLayout>
       <Label class="text-xl align-middle text-center text-gray-500" :text="message" @tap="logMessage" />
       <Button text="Scan Network" col="1" @tap="netutils.runNmapScan()"></Button>
-      <Button text="Start TCPDump" col="2" @tap="tcpdump.getPackets()"></Button>
     </StackLayout>
   </Page>
 </template>
@@ -29,7 +28,6 @@
     data() {
       return {
         netutils: netutils,
-        tcpdump: tcpdump,
       }
     },
     methods: {
@@ -43,16 +41,8 @@
     },
 
     mounted() {
-      const context = Utils.android.getApplicationContext()
-      const wifiManager = context.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-
-      const ipInt = wifiManager.getConnectionInfo().getIpAddress()
-      const ip = (ipInt & 0xff) + "." + ((ipInt >> 8) & 0xff) + "." + ((ipInt >> 16) & 0xff) + "." + ((ipInt >> 24) & 0xff)
-      console.log("Local IP:", ip)
-
-      const dhcp = wifiManager.getDhcpInfo()
-      const gateway = (dhcp.gateway & 0xff) + "." + ((dhcp.gateway >> 8) & 0xff) + "." + ((dhcp.gateway >> 16) & 0xff) + "." + ((dhcp.gateway >> 24) & 0xff)
-      console.log("Gateway:", gateway)
+      tcpdump.getRoot()
+      tcpdump.getPackets()
     }
   });
 </script>

@@ -8,6 +8,7 @@
     <StackLayout>
       <Label class="text-xl align-middle text-center text-gray-500" :text="message" @tap="logMessage" />
       <Button text="Scan Network" col="1" @tap="netutils.runNmapScan()"></Button>
+      <Button text="Start TCPDump" col="2" @tap="tcpdump.getPackets()"></Button>
     </StackLayout>
   </Page>
 </template>
@@ -17,6 +18,7 @@
   import DeviceList from "@/components/DeviceList.vue";
   import { Utils } from "@nativescript/core"
   import * as netutils from "~/netutils";
+  import * as tcpdump from "~/tcpdump";
 
   export default Vue.extend({
     computed: {
@@ -27,6 +29,7 @@
     data() {
       return {
         netutils: netutils,
+        tcpdump: tcpdump,
       }
     },
     methods: {

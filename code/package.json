@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@nativescript/core": "~9.0.0",
+    "fast-xml-parser": "^5.3.4",
     "nativescript-ui-sidedrawer": "^15.2.3",
     "nativescript-vue": "~2.9.3"
   },

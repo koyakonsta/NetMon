@@ -1,4 +1,25 @@
 import { Utils } from "@nativescript/core";
+import { XMLParser } from "fast-xml-parser";
+
+const options = {
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+  // Forces 'host' to always be an array even if only 1 device is found
+  isArray: (name: string) => name === "host" || name === "address"
+};
+
+export interface NmapHost {
+  status: { "@_state": string };
+  address: Array<{ "@_addr": string, "@_addrtype": string, "@_vendor"?: string }>;
+  hostnames?: { hostname: { "@_name": string } };
+}
+
+export interface NmapRoot {
+  nmaprun: {
+    host: NmapHost | NmapHost[]; // Nmap returns an object if 1 host, array if multiple
+  };
+}
+
 
 export function getNetworkDetails() {
   const interfaces = java.net.NetworkInterface.getNetworkInterfaces();
@@ -28,17 +49,27 @@ export function runNmapScan() {
     const context = Utils.ad.getApplicationContext();
     const libDir = context.getApplicationInfo().nativeLibraryDir;
     const nmapPath = `${libDir}/libnmap.so`;
-    const command = `${nmapPath} -sn ${ip}/${prefix}`;
+    const command = `${nmapPath} --min-parallelism 100 --max-rtt-timeout 333ms -T4 -PR -PS443 -PA80 -PE -PP -sn -oX - ${ip}/${prefix}`;
     const envp = [`LD_LIBRARY_PATH=${libDir}`, `NMAPDIR=${libDir}`];
 
     const process = java.lang.Runtime.getRuntime().exec(command, envp);
 
     // Read Output
-    const reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
-    let line = "";
-    while ((line = reader.readLine()) !== null) {
-      console.log("Nmap Output: " + line);
-    }
+    const scanner = new java.util.Scanner(process.getInputStream(), "UTF-8").useDelimiter("\\A");
+    const stdout = scanner.hasNext() ? scanner.next() : ""; scanner.close();
+
+    const parser = new XMLParser(options);
+    const xmlToJson: NmapRoot = parser.parse(stdout);
+
+    // Accessing the data
+    const hosts = xmlToJson.nmaprun.host;
+
+    hosts.forEach(h => {
+      const ip = h.address.find(a => a["@_addrtype"] === "ipv4")?.["@_addr"];
+      const vendor = h.address.find(a => a["@_addrtype"] === "mac")?.["@_vendor"] || "Unknown";
+      console.log(`Device: ${ip} (${vendor})`);
+    });
+
     process.waitFor();
   } catch (e) {
     console.error("Execution failed: ", e);

@@ -6,8 +6,12 @@
     </ActionBar>
 
     <StackLayout>
-      <Label class="text-xl align-middle text-center text-gray-500" :text="message" @tap="logMessage" />
-      <Button text="Scan Network" col="1" @tap="netutils.runNmapScan()"></Button>
+      <Button text="Scan Network" col="1" @tap="doScan"></Button>
+      <ListView :items="scanlist" class="list">
+        <v-template v-slot="{ item }">
+          <Label :text="'Status: '+item.status.state+'\tAddress: '+addrs2list(item.address)+'\tHostname: '+hosts2list(item.hostnames) " />
+        </v-template>
+      </ListView>
     </StackLayout>
   </Page>
 </template>
@@ -17,12 +21,14 @@
   import DeviceList from "@/components/DeviceList.vue";
   import { Utils } from "@nativescript/core"
   import * as netutils from "~/netutils";
+  import {globalState} from "~/store";
+  import {NmapAddress} from "~/netutils";
 
   export default Vue.extend({
     computed: {
-      message() {
-        return "This is the homepage";
-      },
+      scanlist() {
+        return globalState.scanlist;
+      }
     },
     data() {
       return {
@@ -36,8 +42,19 @@
 
       goToDevices() {
         this.$navigateTo(DeviceList)
-      }
-    },
+      },
+
+      doScan(){
+        globalState.scanlist = netutils.runNmapScan();
+      },
+
+      hosts2list(h : { name: string; type: string } | { name: string; type: string }[]) {
+        return [].concat(h as any).map(h => h.name || 'None').join(", ");
+      },
+      addrs2list(h : NmapAddress) {
+        return [].concat(h as any).map(h => h.addrtype+':'+h.addr).join(", ");
+      },
+},
 
     mounted() {
       const context = Utils.android.getApplicationContext()

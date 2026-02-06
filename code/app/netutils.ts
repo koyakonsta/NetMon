@@ -3,21 +3,29 @@ import { XMLParser } from "fast-xml-parser";
 
 const options = {
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
+  attributeNamePrefix: "",
   // Forces 'host' to always be an array even if only 1 device is found
-  isArray: (name: string) => name === "host" || name === "address"
+  isArray: (name:string) => ["host", "address", "hostname"].includes(name),
 };
 
 export interface NmapHost {
-  status: { "@_state": string };
-  address: Array<{ "@_addr": string, "@_addrtype": string, "@_vendor"?: string }>;
-  hostnames?: { hostname: { "@_name": string } };
+  status: { state : string };
+  address: NmapAddress | NmapAddress[];
+  hostnames?: {
+    hostname: { name: string; type: string } | { name: string; type: string }[];
+  };
 }
 
 export interface NmapRoot {
   nmaprun: {
-    host: NmapHost | NmapHost[]; // Nmap returns an object if 1 host, array if multiple
+    host: NmapHost[]; // Nmap returns an object if 1 host, array if multiple
   };
+}
+
+export interface NmapAddress {
+  addr: string;
+  addrtype: "ipv4" | "mac";
+  vendor?: string; // Often present for MAC addresses
 }
 
 
@@ -62,15 +70,19 @@ export function runNmapScan() {
     const xmlToJson: NmapRoot = parser.parse(stdout);
 
     // Accessing the data
-    const hosts = xmlToJson.nmaprun.host;
+    const hosts = xmlToJson.nmaprun.host || [];
 
-    hosts.forEach(h => {
-      const ip = h.address.find(a => a["@_addrtype"] === "ipv4")?.["@_addr"];
-      const vendor = h.address.find(a => a["@_addrtype"] === "mac")?.["@_vendor"] || "Unknown";
-      console.log(`Device: ${ip} (${vendor})`);
-    });
+    // hosts.forEach(h => {
+    //   const ip = h.address.find(a => a["@_addrtype"] === "ipv4")?.["@_addr"];
+    //   const vendor = h.address.find(a => a["@_addrtype"] === "mac")?.["@_vendor"] || "Unknown";
+    //   console.log(`Device: ${ip} (${vendor})`);
+    // });
 
     process.waitFor();
+
+    console.log(`${hosts[0]}`);
+    return hosts;
+
   } catch (e) {
     console.error("Execution failed: ", e);
   }

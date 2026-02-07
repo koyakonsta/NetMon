@@ -42,6 +42,8 @@
 
     mounted() {
       tcpdump.getRoot()
+      tcpdump.copyBinary()
+      tcpdump.setExecutable()
       tcpdump.getPackets()
     }
   });

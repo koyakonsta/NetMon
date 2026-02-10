@@ -1,5 +1,6 @@
 import { Utils } from "@nativescript/core";
 import { XMLParser } from "fast-xml-parser";
+import {globalState} from "~/store";
 
 const options = {
   ignoreAttributes: false,
@@ -24,7 +25,7 @@ export interface NmapRoot {
 
 export interface NmapAddress {
   addr: string;
-  addrtype: "ipv4" | "mac";
+  addrtype: string;
   vendor?: string; // Often present for MAC addresses
 }
 
@@ -50,42 +51,4 @@ export function getNetworkDetails() {
   }
   return null;
 }
-
-export function runNmapScan() {
-  try {
-    const {ip, prefix} = getNetworkDetails() ?? {};
-    const context = Utils.ad.getApplicationContext();
-    const libDir = context.getApplicationInfo().nativeLibraryDir;
-    const nmapPath = `${libDir}/libnmap.so`;
-    const command = `${nmapPath} --min-parallelism 100 --max-rtt-timeout 333ms -T4 -PR -PS443 -PA80 -PE -PP -sn -oX - ${ip}/${prefix}`;
-    const envp = [`LD_LIBRARY_PATH=${libDir}`, `NMAPDIR=${libDir}`];
-
-    const process = java.lang.Runtime.getRuntime().exec(command, envp);
-
-    // Read Output
-    const scanner = new java.util.Scanner(process.getInputStream(), "UTF-8").useDelimiter("\\A");
-    const stdout = scanner.hasNext() ? scanner.next() : ""; scanner.close();
-
-    const parser = new XMLParser(options);
-    const xmlToJson: NmapRoot = parser.parse(stdout);
-
-    // Accessing the data
-    const hosts = xmlToJson.nmaprun.host || [];
-
-    // hosts.forEach(h => {
-    //   const ip = h.address.find(a => a["@_addrtype"] === "ipv4")?.["@_addr"];
-    //   const vendor = h.address.find(a => a["@_addrtype"] === "mac")?.["@_vendor"] || "Unknown";
-    //   console.log(`Device: ${ip} (${vendor})`);
-    // });
-
-    process.waitFor();
-
-    console.log(`${hosts[0]}`);
-    return hosts;
-
-  } catch (e) {
-    console.error("Execution failed: ", e);
-  }
-}
-
 

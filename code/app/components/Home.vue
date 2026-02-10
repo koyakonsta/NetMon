@@ -6,10 +6,14 @@
     </ActionBar>
 
     <StackLayout>
-      <Button text="Scan Network" col="1" @tap="doScan"></Button>
+      <Button text="Scan Network" col="1" @tap="scanDevices"></Button>
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
-          <Label :text="'Status: '+item.status.state+'\tAddress: '+addrs2list(item.address)+'\tHostname: '+hosts2list(item.hostnames) " />
+          <GridLayout columns="*,*" rows="auto,auto">
+              <Label row="0" col="0" :text="'\tStatus: '+item.status.state" />
+              <Label row="0" col="1" :text="'\tAddress: '+addrs2list(item.address)" />
+              <Label row="1" col="0" :text="'\tHostname: '+hosts2list(item.hostnames) " />
+          </GridLayout>
         </v-template>
       </ListView>
     </StackLayout>
@@ -20,9 +24,11 @@
   import Vue from "nativescript-vue";
   import DeviceList from "@/components/DeviceList.vue";
   import { Utils } from "@nativescript/core"
-  import * as netutils from "~/netutils";
   import {globalState} from "~/store";
+  import * as netutils from "~/netutils";
   import {NmapAddress} from "~/netutils";
+  const nmpw = new Worker('~/nmapworker.ts');
+  nmpw.onmessage = (h) => { globalState.scanlist=h.data.hosts; }
 
   export default Vue.extend({
     computed: {
@@ -44,8 +50,8 @@
         this.$navigateTo(DeviceList)
       },
 
-      doScan(){
-        globalState.scanlist = netutils.runNmapScan();
+      scanDevices(){
+        nmpw.postMessage({})
       },
 
       hosts2list(h : { name: string; type: string } | { name: string; type: string }[]) {

@@ -10,9 +10,9 @@
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
           <GridLayout columns="*,*" rows="auto,auto">
-              <Label row="0" col="0" :text="'\tStatus: '+item.status.state" />
-              <Label row="0" col="1" :text="'\tAddress: '+addrs2list(item.address)" />
-              <Label row="1" col="0" :text="'\tHostname: '+hosts2list(item.hostnames) " />
+              <Label row="0" col="0" textWrap="true" :text="'\tStatus: '+item.status.state" />
+              <Label row="0" col="1" textWrap="true" :text="'\tAddress:\n '+addrs2list(item.address)" />
+              <Label row="1" col="0" textWrap="true" :text="'\tHostname: '+hosts2list(item.hostnames) " />
           </GridLayout>
         </v-template>
       </ListView>
@@ -28,7 +28,7 @@
   import * as netutils from "~/netutils";
   import {NmapAddress} from "~/netutils";
   const nmpw = new Worker('~/nmapworker.ts');
-  nmpw.onmessage = (h) => { globalState.scanlist=h.data.hosts; }
+  nmpw.onmessage = (h) => { globalState.scanlist=h.data; }
 
   export default Vue.extend({
     computed: {
@@ -54,11 +54,12 @@
         nmpw.postMessage({})
       },
 
-      hosts2list(h : { name: string; type: string } | { name: string; type: string }[]) {
-        return [].concat(h as any).map(h => h.name || 'None').join(", ");
+      hosts2list(h : { name: string; type: string }[]) {
+        return [].concat(h).map(i => (i.name || 'None')).join(", ");
       },
-      addrs2list(h : NmapAddress) {
-        return [].concat(h as any).map(h => h.addrtype+':'+h.addr).join(", ");
+      addrs2list(h : NmapAddress[]) {
+        console.log(JSON.stringify(h));
+        return [].concat(h).map(i => (i.addrtype+':'+i.addr)).join(", ");
       },
 },
 

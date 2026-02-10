@@ -11,15 +11,15 @@ const options = {
 
 export interface NmapHost {
   status: { state : string };
-  address: NmapAddress | NmapAddress[];
+  address: NmapAddress[];
   hostnames?: {
-    hostname: { name: string; type: string } | { name: string; type: string }[];
+    hostname: { name: string; type: string }[];
   };
 }
 
 export interface NmapRoot {
   nmaprun: {
-    host: NmapHost[]; // Nmap returns an object if 1 host, array if multiple
+    host: NmapHost[];
   };
 }
 

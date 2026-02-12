@@ -6,7 +6,7 @@ context.onmessage = (_: any) => {
     const context = Utils.ad.getApplicationContext()
     const filesDir = context.getFilesDir().getAbsolutePath()
     const tcpDumpPath = `${filesDir}/tcpdump`
-    const command = `${tcpDumpPath} -i wlan0 -n -l -e -tt`
+    const command = `${tcpDumpPath} -i wlan0 -U -w -`
 
     const process = java.lang.Runtime.getRuntime().exec("su");
     const os = new java.io.DataOutputStream(process.getOutputStream())

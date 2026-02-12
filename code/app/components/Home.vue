@@ -29,6 +29,8 @@
   import {NmapAddress} from "~/netutils";
   const nmpw = new Worker('~/nmapworker.ts');
   nmpw.onmessage = (h) => { globalState.scanlist=h.data; }
+  const tcpw = new Worker('~/tcpworker.ts');
+  tcpw.onmessage = (h) => { console.log(h.data); }
   import * as tcpdump from "~/tcpdump";
 
   export default Vue.extend({
@@ -68,7 +70,7 @@
       tcpdump.getRoot()
       tcpdump.copyBinary()
       tcpdump.setExecutable()
-      tcpdump.getPackets()
+      tcpw.postMessage({})
     }
   });
 </script>

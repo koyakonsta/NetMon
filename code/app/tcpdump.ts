@@ -55,33 +55,3 @@ export function setExecutable() {
     console.error("chmod operation failed: ", e)
   }
 }
-
-export function getPackets() {
-  const runnable = new java.lang.Runnable({
-    run: () => {
-      try {
-        const context = Utils.ad.getApplicationContext()
-        const filesDir = context.getFilesDir().getAbsolutePath()
-        const tcpDumpPath = `${filesDir}/tcpdump`
-        let command = Array.create(java.lang.String, 3)
-        command[0] = "su"
-        command[1] = "-c"
-        command[2] = `sh -c "${tcpDumpPath} -i wlan0 -n -l -e -tt"`
-        const pb = new java.lang.ProcessBuilder(command)
-        pb.redirectErrorStream(true)
-        const process = pb.start()
-        console.log("Launched tcpdump")
-        // read output
-        const reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()))
-        let line = ""
-        while ((line = reader.readLine()) !== null) {
-          console.log("tcpdump output: " + line)
-        }
-      } catch (e) {
-        console.error("tcpdump execution failed: ", e)
-      }
-    }
-  })
-
-  new java.lang.Thread(runnable).start()
-}

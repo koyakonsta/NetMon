@@ -29,6 +29,7 @@
   import {NmapAddress} from "~/netutils";
   const nmpw = new Worker('~/nmapworker.ts');
   nmpw.onmessage = (h) => { globalState.scanlist=h.data; }
+  import * as tcpdump from "~/tcpdump";
 
   export default Vue.extend({
     computed: {
@@ -64,16 +65,10 @@
 },
 
     mounted() {
-      const context = Utils.android.getApplicationContext()
-      const wifiManager = context.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-
-      const ipInt = wifiManager.getConnectionInfo().getIpAddress()
-      const ip = (ipInt & 0xff) + "." + ((ipInt >> 8) & 0xff) + "." + ((ipInt >> 16) & 0xff) + "." + ((ipInt >> 24) & 0xff)
-      console.log("Local IP:", ip)
-
-      const dhcp = wifiManager.getDhcpInfo()
-      const gateway = (dhcp.gateway & 0xff) + "." + ((dhcp.gateway >> 8) & 0xff) + "." + ((dhcp.gateway >> 16) & 0xff) + "." + ((dhcp.gateway >> 24) & 0xff)
-      console.log("Gateway:", gateway)
+      tcpdump.getRoot()
+      tcpdump.copyBinary()
+      tcpdump.setExecutable()
+      tcpdump.getPackets()
     }
   });
 </script>

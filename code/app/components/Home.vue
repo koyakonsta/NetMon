@@ -15,7 +15,7 @@
             <Label row="1" col="0" textWrap="true" :text="'Hostname: '+hosts2list(item.hostnames)" :class="getClass(item)"/>
             <Label row="1" col="1" textWrap="true" :text="'Vendor: '+item.vendor" :class="getClass(item)"/>
             <Label row="2" col="0" textWrap="true" :text="'Risk score: '+item.riskScore" :class="getClass(item)"/>
-            <Button row="2" col="1" :text="getButtonText(item)" @tap="toggleSafe(item)" :class="getButtonText(item)"/>
+            <Button row="2" col="1" :text="getButtonText(item)" @tap="toggleSafe(item)" :class="getButtonClass(item)"/>
           </GridLayout>
         </v-template>
       </ListView>
@@ -69,7 +69,7 @@
         return device.isSafe ? "unsafe-button" : "safe-button";
       },
       getButtonText(device: NmapHost) {
-        return device.isSafe ? "Mark Unsafe" : "Mark Unsafe";
+        return device.isSafe ? "Mark Unsafe" : "Mark Safe";
       },
       toggleSafe(device: NmapHost) {
         device.isSafe = !device.isSafe;
@@ -103,12 +103,12 @@
   color: green;
 }
 .safe-button {
-  background-color: oklch(79.2% 0.209 151.711);
+  background-color: #80ff80;
 }
 .unsafe {
   color: red;
 }
 .unsafe-button {
-  background-color: oklch(70.4% 0.191 22.216);
+  background-color: #ff8080;
 }
 </style>

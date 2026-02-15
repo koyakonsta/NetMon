@@ -25,9 +25,7 @@
 
 <script lang="ts">
   import Vue from "nativescript-vue";
-  // import DeviceList from "@/components/DeviceList.vue";
   import Config from "@/components/Config.vue";
-  import { Utils } from "@nativescript/core"
   import {globalState} from "~/store";
   import * as netutils from "~/netutils";
   import {NmapAddress, NmapHost} from "~/netutils";

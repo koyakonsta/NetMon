@@ -16,33 +16,25 @@ if (typeof util.inherits !== 'function') {
 }
 _self.util = util; // Attach it to global scope
 
-const { PassThrough, Readable } = require('stream-browserify');
-import { Utils, File, knownFolders, path } from "@nativescript/core";
+const { Readable } = require('stream-browserify');
+import { Utils } from "@nativescript/core";
 const pcapp = require('pcap-parser');
 
 context.onmessage = (_: any) => {
   try {
-    console.log('YARRRRRRRRRRRRRRRR');
     const context = Utils.ad.getApplicationContext()
-    const filesDir = context.getFilesDir().getAbsolutePath()
     const libDir = context.getApplicationInfo().nativeLibraryDir;
     const tcpDumpPath = `${libDir}/libtcpdump.so`
 
-    // const fifo = `${filesDir}/tcpdump.fifo`;
-    const command = `${tcpDumpPath} -i wlan0 -n -U -w -`; //make fifo and write in tcpdump packets
+    const command = `killall libtcpdump.so > /dev/null; ${tcpDumpPath} -i wlan0 -n -U -w -`; //make fifo and write in tcpdump packets
     const process = java.lang.Runtime.getRuntime().exec("su");
     const os = new java.io.DataOutputStream(process.getOutputStream())
     os.writeBytes(`${command}\n`); os.flush(); //exec
     java.lang.Thread.sleep(500);
     const is = process.getInputStream();
 
-    // const fileCheck = new java.io.File(fifo);
-    // console.log(`FIFO exists: ${fileCheck.exists()}, Readable: ${fileCheck.canRead()}\n${filesDir}`);
-
-    // const fis = new java.io.FileInputStream(new java.io.File(fifo));
     const bis = new java.io.BufferedInputStream(is);
     const javaBuffer = Array.create("byte", 4096);
-    // const streamBridge = new PassThrough({ highWaterMark: 1 }); streamBridge.resume();
     const nodeStream = new Readable({
       read() { /* Node calls this when it wants data, but we push manually */ }
     });
@@ -56,7 +48,6 @@ context.onmessage = (_: any) => {
     nodeStream.resume();
 
     parser.on('packet', (p: any) => {
-      console.log("PACKET FOUND!");
       postMessage(p);
     });
     parser.on('error', (err: any) => {
@@ -68,11 +59,9 @@ context.onmessage = (_: any) => {
         if (bytesRead !== -1) {
           const chunk = Buffer.from(javaBuffer).slice(0, bytesRead);
 
-          // This is the "Magic" line: push data into the Node stream
           nodeStream.emit('data', chunk);
 
-          console.log("PUMPED:", bytesRead);
-          // java.lang.Thread.sleep(500); q();
+          // console.log("PUMPED:", bytesRead);
 
           setTimeout(q, 0);
         }
@@ -82,8 +71,6 @@ context.onmessage = (_: any) => {
     }; q();
 
 
-    // setInterval(()=>{}, 1000);
-    // process.waitFor()
   } catch (e) {
     console.error("Execution failed: ", e);
   }

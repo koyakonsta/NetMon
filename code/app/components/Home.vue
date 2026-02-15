@@ -6,7 +6,10 @@
     </ActionBar>
 
     <StackLayout>
-      <Button text="Scan Network" col="1" @tap="scanDevices"></Button>
+      <Label :visibility="tcpStarted ? 'collapse' : 'visible'" text="The tcpdump worker didn't run. Press the following button to manually launch it and scan packets."/>
+      <Button :visibility="tcpStarted ? 'collapse' : 'visible'" text="Scan Packets" @tap="scanPackets"/>
+      <Label :visibility="nmapStarted ? 'collapse' : 'visible'" text="The nmap worker didn't run. Press the following button to manually scan the list of devices on the network."/>
+      <Button text="Scan Network" @tap="scanDevices"/>
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
           <GridLayout columns="*,*" rows="auto,auto,auto">
@@ -32,19 +35,44 @@
   const nmpw = new Worker('~/nmapworker.ts');
   const tcpw = new Worker('~/tcpworker.ts');
   tcpw.onerror = (err) => {
-    console.log("Worker crashed:", err.message);
+    console.log("Tcp Worker crashed:", err.message);
     console.log("Filename:", err.filename);
     console.log("Line:", err.lineno);
+    tcpw.postMessage({})
   };
-  tcpw.onmessage = (msg) => { console.log("Data from worker:", JSON.stringify(msg.data.header)); };
-  nmpw.onmessage = (h) => { globalState.scanlist=h.data; }
+  tcpw.onmessage = (msg) => {
+    if (msg.data === "ready") {
+      globalState.tcpStarted = true;
+      return;
+    }
+    console.log("Data from worker:", JSON.stringify(msg.data.header));
+  };
+  nmpw.onerror = (err) => {
+    console.log("Nmap Worker crashed:", err.message);
+    console.log("Filename:", err.filename);
+    console.log("Line:", err.lineno);
+    nmpw.postMessage({})
+  }
+  nmpw.onmessage = (msg) => {
+    if (msg.data === "ready") {
+      globalState.nmapStarted = true;
+      return;
+    }
+    globalState.scanlist=msg.data;
+  }
   let started = false;
 
   export default Vue.extend({
     computed: {
       scanlist() {
         return globalState.scanlist;
-      }
+      },
+      nmapStarted() {
+        return globalState.nmapStarted;
+      },
+      tcpStarted() {
+        return globalState.tcpStarted;
+      },
     },
     data() {
       return {
@@ -52,10 +80,6 @@
       }
     },
     methods: {
-      logMessage() {
-        console.log('You have tapped the message!')
-      },
-
       goToConfig(){
         this.$navigateTo(Config)
       },
@@ -76,6 +100,9 @@
       scanDevices(){
         nmpw.postMessage({})
       },
+      scanPackets() {
+        tcpw.postMessage({})
+      },
 
       hosts2list(h : { name: string; type: string }[]) {
         return [].concat(h).map(i => (i.name || 'None')).join(", ");
@@ -91,6 +118,16 @@
         nmpw.postMessage({});
         tcpw.postMessage({});
         started = true;
+      }
+    },
+
+    beforeDestroy() {
+      console.log("Killing the workers before terminating");
+      if (nmpw) {
+        nmpw.terminate();
+      }
+      if (tcpw) {
+        tcpw.terminate();
       }
     }
   });

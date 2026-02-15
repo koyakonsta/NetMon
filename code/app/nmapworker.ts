@@ -4,11 +4,10 @@ import "@nativescript/core/globals";
 import {Utils} from "@nativescript/core";
 const context: Worker = self as any;
 
-
-
-context.onmessage = (msg) => {
+context.onmessage = (_: any) => {
   try {
     console.log("Launching nmap worker...")
+    postMessage("ready");
     const {ip, prefix} = getNetworkDetails() ?? {};
     console.log(ip, prefix);
     const context = Utils.ad.getApplicationContext();

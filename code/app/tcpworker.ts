@@ -23,6 +23,7 @@ const pcapp = require('pcap-parser');
 context.onmessage = (_: any) => {
   try {
     console.log("Starting tcpdump worker...")
+    postMessage("ready");
     const context = Utils.ad.getApplicationContext()
     const libDir = context.getApplicationInfo().nativeLibraryDir;
     const tcpDumpPath = `${libDir}/libtcpdump.so`

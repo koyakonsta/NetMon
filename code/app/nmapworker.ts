@@ -1,15 +1,10 @@
-import {Utils} from "@nativescript/core";
 import {XMLParser} from "fast-xml-parser";
-import {getNetworkDetails, NmapRoot} from "~/netutils";
+import {getNetworkDetails, NmapRoot, options, getVendor} from "~/netutils";
 import "@nativescript/core/globals";
+import {Utils} from "@nativescript/core";
 const context: Worker = self as any;
 
-const options = {
-  ignoreAttributes: false,
-  attributeNamePrefix: "",
-  // Forces 'host' to be an array
-  isArray: (name:string) => ["host", "address", "hostname"].includes(name),
-};
+
 
 context.onmessage = (msg) => {
   try {
@@ -23,13 +18,13 @@ context.onmessage = (msg) => {
 
     const process = java.lang.Runtime.getRuntime().exec("su", envp);
 
-    // 2. Setup input and output streams
+    // I/O streams
     const os = new java.io.DataOutputStream(process.getOutputStream());
 
-    // 3. Write your command and exit the root shell immediately after
+    // exec nmap
     os.writeBytes(`${command}\nexit\n`); os.flush();
 
-    // Read Output
+    // read stdout
     const scanner = new java.util.Scanner(process.getInputStream(), "UTF-8").useDelimiter("\\A");
     const stdout = scanner.hasNext() ? scanner.next() : ""; scanner.close();
     console.log(stdout);
@@ -37,8 +32,10 @@ context.onmessage = (msg) => {
     const parser = new XMLParser(options);
     const xmlToJson: NmapRoot = parser.parse(stdout);
 
-    // Accessing the data
-    const hosts = xmlToJson.nmaprun.host || [];
+    // parse xml
+    let hosts = xmlToJson.nmaprun.host || [];
+    //add vendor mac lookup
+    hosts = hosts.map(h => ({...h, vendor:getVendor(h.address.find(i => i.addrtype=='mac')?.addr??"", "N/A")}))
 
     process.waitFor();
 

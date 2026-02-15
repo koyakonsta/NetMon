@@ -1,11 +1,10 @@
-import { Utils } from "@nativescript/core";
-import { XMLParser } from "fast-xml-parser";
-import {globalState} from "~/store";
+import {getVendor} from 'mac-oui-lookup';
+export {getVendor};
 
-const options = {
+export const options = {
   ignoreAttributes: false,
   attributeNamePrefix: "",
-  // Forces 'host' to always be an array even if only 1 device is found
+  // Forces 'host' to be an array
   isArray: (name:string) => ["host", "address", "hostname"].includes(name),
 };
 
@@ -51,4 +50,6 @@ export function getNetworkDetails() {
   }
   return null;
 }
+
+
 

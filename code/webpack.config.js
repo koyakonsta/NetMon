@@ -32,7 +32,29 @@ module.exports = (env) => {
                     preserveWhitespace: false,
                 },
 			}));
-	});
+
+    config.resolve
+      .merge({
+        'fallback': {
+          "util": require.resolve("util/"),
+          "events": require.resolve("events/"),
+          "stream": require.resolve("stream-browserify"),
+          "inherits": require.resolve("inherits"),
+          "buffer": require.resolve("buffer/"),
+          "process": require.resolve("process/browser"),
+          "xhr": require.resolve("xhr/"),
+          "fs": false,
+        }
+      }); // fs cannot be polyfilled
+
+    config.plugin('ProvidePlugin').use(require('webpack').ProvidePlugin, [
+      {
+        process: 'process/browser',
+        Buffer: ['buffer', 'Buffer'],
+      },
+    ]);
+
+  });
 
 	return webpack.resolveConfig();
 };

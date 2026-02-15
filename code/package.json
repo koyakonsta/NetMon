@@ -5,9 +5,19 @@
   "private": true,
   "dependencies": {
     "@nativescript/core": "~9.0.0",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
     "fast-xml-parser": "^5.3.4",
+    "inherits": "^2.0.4",
+    "mac-oui-lookup": "^1.1.4",
+    "nativescript-nodeify": "^0.8.0",
     "nativescript-ui-sidedrawer": "^15.2.3",
-    "nativescript-vue": "~2.9.3"
+    "nativescript-vue": "~2.9.3",
+    "pcap-parser": "^0.2.1",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
+    "xhr": "^2.6.0"
   },
   "devDependencies": {
     "@nativescript/android": "9.0.2",

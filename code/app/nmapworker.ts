@@ -8,6 +8,7 @@ const context: Worker = self as any;
 
 context.onmessage = (msg) => {
   try {
+    console.log("Launching nmap worker...")
     const {ip, prefix} = getNetworkDetails() ?? {};
     console.log(ip, prefix);
     const context = Utils.ad.getApplicationContext();
@@ -36,6 +37,7 @@ context.onmessage = (msg) => {
     let hosts = xmlToJson.nmaprun.host || [];
     //add vendor mac lookup
     hosts = hosts.map(h => ({...h, vendor:getVendor(h.address.find(i => i.addrtype=='mac')?.addr??"", "N/A")}))
+    hosts = hosts.map(h => ({...h, riskScore: 0, isSafe: true}))
 
     process.waitFor();
 

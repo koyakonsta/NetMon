@@ -2,7 +2,6 @@
   <Page>
     <ActionBar>
       <Label text="Home" class="font-bold text-lg"/>
-      <ActionItem text="Devices" android.position="actionBar" @tap="goToDevices"/>
       <ActionItem text="Config" android.position="actionBar" @tap="goToConfig"/>
     </ActionBar>
 
@@ -10,11 +9,13 @@
       <Button text="Scan Network" col="1" @tap="scanDevices"></Button>
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
-          <GridLayout columns="*,*" rows="auto,auto">
-              <Label row="0" col="0" textWrap="true" :text="'\tStatus: '+item.status.state" />
-              <Label row="0" col="1" textWrap="true" :text="'Address:'+addrs2list(item.address)" />
-              <Label row="1" col="1" textWrap="true" :text="'Vendor: '+item.vendor" />
-              <Label row="1" col="0" textWrap="true" :text="'\tHostname: '+hosts2list(item.hostnames) " />
+          <GridLayout columns="*,*" rows="auto,auto,auto">
+            <Label row="0" col="0" textWrap="true" :text="'Status: '+item.status.state" :class="getClass(item)"/>
+            <Label row="0" col="1" textWrap="true" :text="'Address: '+addrs2list(item.address)" :class="getClass(item)"/>
+            <Label row="1" col="0" textWrap="true" :text="'Hostname: '+hosts2list(item.hostnames)" :class="getClass(item)"/>
+            <Label row="1" col="1" textWrap="true" :text="'Vendor: '+item.vendor" :class="getClass(item)"/>
+            <Label row="2" col="0" textWrap="true" :text="'Risk score: '+item.riskScore" :class="getClass(item)"/>
+            <Button row="2" col="1" :text="getButtonText(item)" @tap="toggleSafe(item)" :class="getButtonText(item)"/>
           </GridLayout>
         </v-template>
       </ListView>
@@ -24,21 +25,22 @@
 
 <script lang="ts">
   import Vue from "nativescript-vue";
-  import DeviceList from "@/components/DeviceList.vue";
+  // import DeviceList from "@/components/DeviceList.vue";
   import Config from "@/components/Config.vue";
   import { Utils } from "@nativescript/core"
   import {globalState} from "~/store";
   import * as netutils from "~/netutils";
-  import {NmapAddress} from "~/netutils";
+  import {NmapAddress, NmapHost} from "~/netutils";
   const nmpw = new Worker('~/nmapworker.ts');
   const tcpw = new Worker('~/tcpworker.ts');
   tcpw.onerror = (err) => {
-    console.log("WORKER CRASHED:", err.message);
-    console.log("FILENAME:", err.filename);
-    console.log("LINE:", err.lineno);
+    console.log("Worker crashed:", err.message);
+    console.log("Filename:", err.filename);
+    console.log("Line:", err.lineno);
   };
-  tcpw.onmessage = (msg) => { console.log("DATA FROM WORKER:", JSON.stringify(msg.data.header)); };
+  tcpw.onmessage = (msg) => { console.log("Data from worker:", JSON.stringify(msg.data.header)); };
   nmpw.onmessage = (h) => { globalState.scanlist=h.data; }
+  let started = false;
 
   export default Vue.extend({
     computed: {
@@ -56,15 +58,25 @@
         console.log('You have tapped the message!')
       },
 
-      goToDevices() {
-        this.$navigateTo(DeviceList)
-      },
       goToConfig(){
         this.$navigateTo(Config)
       },
+
+      getClass(device: NmapHost) {
+        return device.isSafe ? "safe" : "unsafe";
+      },
+      getButtonClass(device: NmapHost) {
+        return device.isSafe ? "unsafe-button" : "safe-button";
+      },
+      getButtonText(device: NmapHost) {
+        return device.isSafe ? "Mark Unsafe" : "Mark Unsafe";
+      },
+      toggleSafe(device: NmapHost) {
+        device.isSafe = !device.isSafe;
+      },
+
       scanDevices(){
-        // nmpw.postMessage({})
-        tcpw.postMessage({})
+        nmpw.postMessage({})
       },
 
       hosts2list(h : { name: string; type: string }[]) {
@@ -76,14 +88,27 @@
 },
 
     mounted() {
-      // tcpdump.getRoot()
-
-      // tcpdump.copyBinary()
-      // tcpdump.setExecutable()
-      // tcpdump.getPackets()
+      if (!started) {
+        console.log("Starting workers...")
+        nmpw.postMessage({});
+        tcpw.postMessage({});
+        started = true;
+      }
     }
   });
 </script>
 
 <style>
+.safe {
+  color: green;
+}
+.safe-button {
+  background-color: oklch(79.2% 0.209 151.711);
+}
+.unsafe {
+  color: red;
+}
+.unsafe-button {
+  background-color: oklch(70.4% 0.191 22.216);
+}
 </style>

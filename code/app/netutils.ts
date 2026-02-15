@@ -14,6 +14,9 @@ export interface NmapHost {
   hostnames?: {
     hostname: { name: string; type: string }[];
   };
+  vendor: string | null | undefined;
+  riskScore: Number;
+  isSafe: boolean;
 }
 
 export interface NmapRoot {

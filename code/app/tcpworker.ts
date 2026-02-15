@@ -22,6 +22,7 @@ const pcapp = require('pcap-parser');
 
 context.onmessage = (_: any) => {
   try {
+    console.log("Starting tcpdump worker...")
     const context = Utils.ad.getApplicationContext()
     const libDir = context.getApplicationInfo().nativeLibraryDir;
     const tcpDumpPath = `${libDir}/libtcpdump.so`
@@ -39,11 +40,11 @@ context.onmessage = (_: any) => {
       read() { /* Node calls this when it wants data, but we push manually */ }
     });
 
-// add the missing methods that pcap-parser is crying about
+    // add the missing methods that pcap-parser is crying about
     nodeStream.pause = () => { console.log("Parser requested pause"); };
     nodeStream.resume = () => { console.log("Parser requested resume"); };
 
-// pass  to parser
+    // pass  to parser
     const parser = pcapp.parse(nodeStream);
     nodeStream.resume();
 
@@ -51,7 +52,7 @@ context.onmessage = (_: any) => {
       postMessage(p);
     });
     parser.on('error', (err: any) => {
-      console.error("PCAP PARSER ERROR:", err);
+      console.error("pcap parser error:", err);
     });
     const q = () => {
       try {
@@ -61,16 +62,12 @@ context.onmessage = (_: any) => {
 
           nodeStream.emit('data', chunk);
 
-          // console.log("PUMPED:", bytesRead);
-
           setTimeout(q, 0);
         }
       } catch (e) {
         console.error("Pump Error:", e);
       }
     }; q();
-
-
   } catch (e) {
     console.error("Execution failed: ", e);
   }

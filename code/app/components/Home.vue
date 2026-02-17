@@ -32,6 +32,7 @@
   import {globalState} from "~/store";
   import * as netutils from "~/netutils";
   import {NmapAddress, NmapHost} from "~/netutils";
+  import {analysePacket} from "~/packets";
   const nmpw = new Worker('~/nmapworker.ts');
   const tcpw = new Worker('~/tcpworker.ts');
   tcpw.onerror = (err) => {
@@ -45,7 +46,8 @@
       globalState.tcpStarted = true;
       return;
     }
-    console.log("Data from worker:", JSON.stringify(msg.data.header));
+    // console.log("Data from worker:", JSON.stringify(msg.data));
+    analysePacket(msg.data.header, msg.data.data.data)
   };
   nmpw.onerror = (err) => {
     console.log("Nmap Worker crashed:", err.message);

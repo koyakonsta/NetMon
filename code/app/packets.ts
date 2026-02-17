@@ -77,18 +77,20 @@ export function analyseTCP(header: packetHeader, sourceIP: string, destinationIP
 }
 
 export function addRiskScore(address: string, points: number) {
-  let device;
-  for (const currDevice of globalState.scanlist) {
-    if (device) { break; }
-    for (const currAddress of currDevice.address) {
-      if (currAddress.addr == address) {
-        device = currDevice;
-        break;
-      }
-    }
-  }
-
-  if (device) {
-    device.riskScore += points;
-  }
+  const device = globalState.scanlist.find(dev => {dev.address.some(_ => _.addr==address)});
+  if (device!==null) dev.riskScore += points;
+  // let device;
+  // for (const currDevice of globalState.scanlist) {
+  //   if (device) { break; }
+  //   for (const currAddress of currDevice.address) {
+  //     if (currAddress.addr == address) {
+  //       device = currDevice;
+  //       break;
+  //     }
+  //   }
+  // }
+  //
+  // if (device) {
+  //   device.riskScore += points;
+  // }
 }

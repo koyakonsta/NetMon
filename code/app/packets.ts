@@ -1,5 +1,6 @@
 import {storeSYNInfo} from "~/portscans";
 import {globalState} from "~/store";
+import {getVendor} from "~/netutils";
 
 export interface packetHeader {
   timestampSeconds: number;
@@ -79,22 +80,38 @@ export function analyseTCP(header: packetHeader, sourceIP: string, destinationIP
 let arpTable: any[];
 
 export function analyseARP(header: packetHeader, packet: number[]){
-  const HWType = packet[0]<<8 + packet[1]
-  const ProtocolType = packet[2]<<8 + packet[3] //(we will assume it is IPv4)
+  const HWType = (packet[0]<<8) + packet[1]
+  const ProtocolType = (packet[2]<<8) + packet[3] //(we will assume it is IPv4)
   const HWLength = packet[4];
   const ProtocolLength = packet[5];
-  const Operation = packet[6]<<8 + packet[7];
-  const sender_HWAddress = macToString( packet.slice(8, 8+HWLength));
+  const Operation = (packet[6]<<8) + packet[7];
+  const sender_HWAddress = macToString( packet.slice(8, 8+HWLength)).toLowerCase();
   const sender_ProtocolAddress = ipToString(packet.slice(8+HWLength, 8+HWLength+ProtocolLength));
   const target_HWAddress = macToString(packet.slice(8+HWLength+ProtocolLength, 8+2*HWLength+ProtocolLength));
   const target_ProtocolAddress = ipToString(packet.slice(8+2*HWLength+ProtocolLength, 8+2*HWLength+2*ProtocolLength));
   console.log(`received ARP Packet from ${sender_HWAddress}/${sender_ProtocolAddress} to ${target_HWAddress}/${target_ProtocolAddress}`);
 
+  if (!globalState.scanlist.some(host => host.address.some(addr => addr.addr==sender_HWAddress))){ //if sender not in scanlist
+    //add to scanlist
+    globalState.scanlist.push({
+      status:{state:'up'},
+      address:[
+        {addr: sender_HWAddress, addrtype:'mac'},
+        {addr: sender_ProtocolAddress, addrtype:'ipv4'}
+      ],
+      vendor:getVendor(sender_HWAddress, 'None'),
+      riskScore:0,
+      isSafe:true
+    });
+  }
+
+
   if (ProtocolType==0x0800) { //if protocol is ipv4
     if (HWType==1) { //if ethernet
       if (Operation==2) {//we only check replies
         console.log('\tARP-Reply');
-        if (arpTable.find(entry => entry.ip==sender_ProtocolAddress)?.mac!==sender_HWAddress) {
+        let arpDev = arpTable?.find(entry => entry.ip==sender_ProtocolAddress)?.mac;
+        if ((arpDev!=null)&&(arpDev!==sender_HWAddress)) {
           //if entry already exists in arp table but with different MAC-IP pair, flag
           console.warn("Device " + sender_HWAddress + " made potential ARP poisoning attempt");
           addRiskScore(sender_HWAddress, 10);
@@ -145,8 +162,10 @@ function getARP(){
 setInterval(getARP, 3000);
 
 export function addRiskScore(address: string, points: number) {
-  const device = globalState.scanlist.find(dev => {dev.address.some(_ => _.addr==address)});
-  if (device!==null) device.riskScore += points;
+  let device = globalState.scanlist.find(dev => dev.address.some(_ => _.addr==address));
+  if (device!=null) {
+    device.riskScore = (device.riskScore??0) + points;
+  }
   // let device;
   // for (const currDevice of globalState.scanlist) {
   //   if (device) { break; }

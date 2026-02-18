@@ -107,7 +107,7 @@
       },
 
       hosts2list(h : { name: string; type: string }[]) {
-        return [].concat(h).map(i => (i.name || 'None')).join(", ");
+        return [].concat(h).map(i => (i?.name ?? 'None')).join(", ");
       },
       addrs2list(h : NmapAddress[]) {
         return [].concat(h).map(i => (i.addrtype+':'+i.addr)).join(", ");

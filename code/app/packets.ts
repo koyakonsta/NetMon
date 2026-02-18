@@ -9,6 +9,12 @@ export interface packetHeader {
   originalLength: number;
 }
 
+function padMACAddr(mac:string) {
+  return mac.split(':')
+    .map(b => b ? b.padStart(2, '0').toLowerCase() : '00')
+    .join(':');
+}
+
 export function getTimestamp(header: packetHeader): number {
   return header.timestampSeconds + header.timestampMicroseconds / 1000000;
 }
@@ -85,7 +91,7 @@ export function analyseARP(header: packetHeader, packet: number[]){
   const HWLength = packet[4];
   const ProtocolLength = packet[5];
   const Operation = (packet[6]<<8) + packet[7];
-  const sender_HWAddress = macToString( packet.slice(8, 8+HWLength)).toLowerCase();
+  const sender_HWAddress = padMACAddr( macToString( packet.slice(8, 8+HWLength)).toLowerCase());
   const sender_ProtocolAddress = ipToString(packet.slice(8+HWLength, 8+HWLength+ProtocolLength));
   const target_HWAddress = macToString(packet.slice(8+HWLength+ProtocolLength, 8+2*HWLength+ProtocolLength));
   const target_ProtocolAddress = ipToString(packet.slice(8+2*HWLength+ProtocolLength, 8+2*HWLength+2*ProtocolLength));
@@ -151,13 +157,14 @@ function getARP(){
         ip: parts[0],
         hwType: parts[1],
         flags: parts[2],
-        mac: parts[3],
+        mac: parts[3].toLowerCase(),
         mask: parts[4],
         device: parts[5]
       });
     }
   }
   arpTable = arpentries;
+  // console.log(arpTable);
 }
 setInterval(getARP, 3000);
 

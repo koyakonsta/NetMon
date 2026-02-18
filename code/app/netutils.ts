@@ -1,6 +1,8 @@
 import {getVendor} from 'mac-oui-lookup';
 export {getVendor};
 
+export const netInterfaces : string[]=[];
+
 export const options = {
   ignoreAttributes: false,
   attributeNamePrefix: "",
@@ -36,6 +38,7 @@ export function getNetworkDetails() {
   const interfaces = java.net.NetworkInterface.getNetworkInterfaces();
   while (interfaces.hasMoreElements()) {
     const ix = interfaces.nextElement();
+    netInterfaces.push(ix.getName());
     const addresses = ix.getInterfaceAddresses(); // Returns list of InterfaceAddress
 
     for (let i = 0; i < addresses.size(); i++) {

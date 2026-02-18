@@ -33,7 +33,7 @@ export function analysePacket(header: packetHeader, data: number[]): void {
     case 0x0800:  // IPv4
       return analyseIPv4(header, data.slice(14));
     case 0x0806:  // ARP
-      return;
+      return analyseARP(header, data.slice(14));
     case 0x0835:  // Reverse ARP
       return;
     case 0x86DD:  // IPv6
@@ -76,9 +76,77 @@ export function analyseTCP(header: packetHeader, sourceIP: string, destinationIP
   }
 }
 
+let arpTable: any[];
+
+export function analyseARP(header: packetHeader, packet: number[]){
+  const HWType = packet[0]<<8 + packet[1]
+  const ProtocolType = packet[2]<<8 + packet[3] //(we will assume it is IPv4)
+  const HWLength = packet[4];
+  const ProtocolLength = packet[5];
+  const Operation = packet[6]<<8 + packet[7];
+  const sender_HWAddress = macToString( packet.slice(8, 8+HWLength));
+  const sender_ProtocolAddress = ipToString(packet.slice(8+HWLength, 8+HWLength+ProtocolLength));
+  const target_HWAddress = macToString(packet.slice(8+HWLength+ProtocolLength, 8+2*HWLength+ProtocolLength));
+  const target_ProtocolAddress = ipToString(packet.slice(8+2*HWLength+ProtocolLength, 8+2*HWLength+2*ProtocolLength));
+  console.log(`received ARP Packet from ${sender_HWAddress}/${sender_ProtocolAddress} to ${target_HWAddress}/${target_ProtocolAddress}`);
+
+  if (ProtocolType==0x0800) { //if protocol is ipv4
+    if (HWType==1) { //if ethernet
+      if (Operation==2) {//we only check replies
+        console.log('\tARP-Reply');
+        if (arpTable.find(entry => entry.ip==sender_ProtocolAddress)?.mac!==sender_HWAddress) {
+          //if entry already exists in arp table but with different MAC-IP pair, flag
+          console.warn("Device " + sender_HWAddress + " made potential ARP poisoning attempt");
+          addRiskScore(sender_HWAddress, 10);
+
+        }
+      }
+    }
+  }
+  // Monitor ARP Traffic: Capture ARP packets on the network.
+  //   Track ARP Entries: Maintain a table of valid IP-MAC address mappings.
+  //   Check for Duplicates: For each new ARP packet:
+  //   Compare the source IP and MAC address.
+  //   If the source IP is already in the table but with a different MAC address, flag it as a potential ARP poisoning attempt.
+  //   Validate MAC Address: Ensure the MAC address in the ARP packet matches the expected MAC address for the source IP.
+  //   Alert on Anomalies: If discrepancies are found, generate an alert.
+
+}
+
+function getARP(){
+  const process = java.lang.Runtime.getRuntime().exec("su");
+  const command = `cat /proc/net/arp`;
+  const os = new java.io.DataOutputStream(process.getOutputStream());
+  os.writeBytes(`${command}\nexit\n`); os.flush();
+
+  const scanner = new java.util.Scanner(process.getInputStream(), "UTF-8").useDelimiter("\\A");
+  const stdout = scanner.hasNext() ? scanner.next() : ""; scanner.close();
+
+  const arpentries = [];
+  for (let line of stdout.split('\n').slice(1)) {
+    if (!line) continue;
+
+    // Split by one or more whitespace characters
+    const parts = line.split(/\s+/);
+
+    if (parts.length >= 4) {
+      arpentries.push({
+        ip: parts[0],
+        hwType: parts[1],
+        flags: parts[2],
+        mac: parts[3],
+        mask: parts[4],
+        device: parts[5]
+      });
+    }
+  }
+  arpTable = arpentries;
+}
+setInterval(getARP, 3000);
+
 export function addRiskScore(address: string, points: number) {
   const device = globalState.scanlist.find(dev => {dev.address.some(_ => _.addr==address)});
-  if (device!==null) dev.riskScore += points;
+  if (device!==null) device.riskScore += points;
   // let device;
   // for (const currDevice of globalState.scanlist) {
   //   if (device) { break; }

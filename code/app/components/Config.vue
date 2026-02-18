@@ -2,20 +2,14 @@
 <template>
   <Page>
     <ActionBar>
-      <Label text="Devices" class="font-bold text-lg"/>
+      <Label text="Config" class="font-bold text-lg"/>
       <NavigationButton text="Back" android.systemIcon="ic_menu_back" @tap="$navigateBack()"/>
     </ActionBar>
 
     <StackLayout>
-      <Label text="These devices are currently connected to your network:" />
-      <ListView :items="devices" class="list">
-        <v-template v-slot="{ item }">
-          <GridLayout columns="*, auto" padding="12px">
-            <Label :text="item.name" :class="item.safe ? 'safe' : 'unsafe'" class="device-item" col="0" />
-            <Button :text="'Mark ' + (item.safe ? 'Unsafe' : 'Safe')" col="1" @tap="toggleSafe(item)"></Button>
-          </GridLayout>
-        </v-template>
-      </ListView>
+      <Label text="Configure settings:" />
+      <ListPicker :items="globalState.networkInterfaces" @selectedIndexChange="setIf" />
+      <Label :text="'Selected interface: ' + globalState.selectedInterface" />
     </StackLayout>
   </Page>
 </template>
@@ -27,14 +21,16 @@
 
   export default Vue.extend({
     computed: {
-      devices(){
-        return globalState.devices;
-      }
+      globalState() {
+        return globalState
+      },
     },
 
     methods: {
-      toggleSafe(device: { name: string, safe: boolean }) {
-        device.safe = !device.safe;
+      setIf(args){
+        const picker = args.object;
+        const indx = picker.selectedIndex;
+        globalState.selectedInterface = globalState.networkInterfaces[indx];
       }
     }
   });

@@ -19,6 +19,7 @@ export interface NmapHost {
   vendor: string | null | undefined;
   riskScore: number;
   isSafe: boolean;
+  threats?: Set<string>;
 }
 
 export interface NmapRoot {

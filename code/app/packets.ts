@@ -120,7 +120,7 @@ export function analyseARP(header: packetHeader, packet: number[]){
         if ((arpDev!=null)&&(arpDev!==sender_HWAddress)) {
           //if entry already exists in arp table but with different MAC-IP pair, flag
           console.warn("Device " + sender_HWAddress + " made potential ARP poisoning attempt");
-          addRiskScore(sender_HWAddress, 10);
+          addRiskScore(sender_HWAddress, 10, 'ARP Poisoning');
 
         }
       }
@@ -168,9 +168,10 @@ function getARP(){
 }
 setInterval(getARP, 3000);
 
-export function addRiskScore(address: string, points: number) {
+export function addRiskScore(address: string, points: number, reason?:string) {
   let device = globalState.scanlist.find(dev => dev.address.some(_ => _.addr==address));
   if (device!=null) {
     device.riskScore = (device.riskScore??0) + points;
+    if (reason) device.threats = new Set([...(device.threats||[]), reason])
   }
 }

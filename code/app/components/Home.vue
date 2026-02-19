@@ -15,10 +15,14 @@
       </template>
 
       <Button text="Scan Network" @tap="scanDevices" />
-      <RadPieChart allowAnimation="true" height="200"> <!-- pie chart showing threat stats -->
+      <RadPieChart allowAnimation="true" seriesAnimationDuration="1000" seriesAnimationCurve="Linear" height="200"> <!-- pie chart showing threat stats -->
+        <Palette v-tkPiePalette seriesName="threats">
+          <PaletteEntry fillColor="green" strokeColor="green" />
+          <PaletteEntry fillColor="goldenrod" strokeColor="goldenrod" />
+          <PaletteEntry fillColor="maroon" strokeColor="maroon" />
+        </Palette>
         <DonutSeries v-tkPieSeries
-                     selectionMode="DataPoint"
-                     seriesName="pal"
+                     seriesName="threats"
                      paletteMode="DataPoint"
                      expandRadius="0.4"
                      outerRadiusFactor="0.7"
@@ -27,26 +31,30 @@
                      legendLabel="type"
                      :items="threatStats"/>
 
-        <Palette tkPiePalette seriesName="pal">
-          <PaletteEntry tkPiePaletteEntry fillColor="blue" strokeColor="blue"/>
-          <PaletteEntry tkPiePaletteEntry fillColor="red" strokeColor="red"/>
-          <PaletteEntry tkPiePaletteEntry fillColor="yellow" strokeColor="yellow"/>
-        </Palette>
-        <RadLegendView v-tkPieLegend position="Right" title="" offsetOrigin="TopRight" width="110"/>
+        <RadLegendView v-tkPieLegend position="Right" offsetOrigin="TopRight" width="128"/>
       </RadPieChart>
 
       <ActivityIndicator v-if="!(scanlist.length)" :busy="true" />
 
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
-          <GridLayout columns="*,*" rows="auto,auto,auto">
-            <Label row="0" col="0" textWrap="true" :text="'Status: '+item.status.state" :class="getClass(item)"/>
-            <Label row="0" col="1" textWrap="true" :text="'Address: '+addrs2list(item.address)" :class="getClass(item)"/>
-            <Label row="1" col="0" textWrap="true" :text="'Hostname: '+hosts2list(item.hostnames)" :class="getClass(item)"/>
-            <Label row="1" col="1" textWrap="true" :text="'Vendor: '+item.vendor" :class="getClass(item)"/>
-            <Label row="2" col="0" textWrap="true" :text="'Risk score: '+item.riskScore" :class="getClass(item)"/>
-            <Button row="2" col="1" :text="getButtonText(item)" @tap="toggleSafe(item)" :class="getButtonClass(item)"/>
-          </GridLayout>
+          <StackLayout>
+            <GridLayout columns="*,*" rows="auto,auto,auto">
+              <Label row="0" col="0" textWrap="true" :text="'Status: '+item.status.state" :class="getClass(item)"/>
+              <Label row="0" col="1" textWrap="true" :text="'Address: '+addrs2list(item.address)" :class="getClass(item)"/>
+              <Label row="1" col="0" textWrap="true" :text="'Hostname: '+hosts2list(item.hostnames)" :class="getClass(item)"/>
+              <Label row="1" col="1" textWrap="true" :text="'Vendor: '+item.vendor" :class="getClass(item)"/>
+              <Label row="2" col="0" textWrap="true" :text="'Risk score: '+item.riskScore" :class="getClass(item)"/>
+              <Button row="2" col="1" :text="getButtonText(item)" @tap="toggleSafe(item)" :class="getButtonClass(item)"/>
+            </GridLayout>
+            <ScrollView orientation="horizontal"><StackLayout orientation="horizontal">
+              <Label
+                  v-for="threat in item.threats||[]"
+                  :text="threat"
+                  class="chiclet"
+              />
+            </StackLayout></ScrollView>
+          </StackLayout>
         </v-template>
       </ListView>
     </StackLayout>
@@ -107,9 +115,9 @@
         const safe = globalState.scanlist.filter(_ => _.isSafe).length;
         const potential = globalState.scanlist.filter(_ => (_.riskScore>0 && _.isSafe) ).length;
         return [
-            {'type':"Unsafe", 'count':(unsafe), 'color': 'red'},
-            {'type':"Safe", 'count':(safe), 'color': 'green'},
-            {'type':"Potential Threat", 'count':(potential), 'color': 'green'}
+            {'type':"Safe", 'count':(safe)},
+            {'type':"Potential Threat", 'count':(potential)},
+            {'type':"Unsafe", 'count':(unsafe)}
         ]
       }
     },
@@ -124,7 +132,7 @@
       },
 
       getClass(device: NmapHost) {
-        return device.isSafe ? "safe" : "unsafe";
+        return device.isSafe ? (device.riskScore>0 ? "potentially-unsafe" : "safe") : "unsafe";
       },
       getButtonClass(device: NmapHost) {
         return device.isSafe ? "unsafe-button" : "safe-button";
@@ -159,6 +167,7 @@
         tcpw.postMessage({});
         started = true;
       }
+
     },
 
     beforeDestroy() {
@@ -183,7 +192,21 @@
 .unsafe {
   color: red;
 }
+.potentially-unsafe {
+  color: goldenrod;
+}
+
 .unsafe-button {
   background-color: #ff8080;
 }
+
+.chiclet {
+  background-color: #4f63ff;
+  border-radius: 16;
+  padding: 8 8;
+  margin: 4;
+  horizontal-align: left;
+}
+
+
 </style>

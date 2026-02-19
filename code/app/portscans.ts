@@ -10,7 +10,7 @@ function SYN_tick(){ //call every 10sec to test for suspicious activity and clea
       // TODO: Send a notification to warn of this
       // TODO: Also prevent the score from being magnified multiple times at once
       console.warn("Device " + device + " sent " + activities.length +  " SYN requests in 10 seconds.");
-      addRiskScore(device, 10);
+      addRiskScore(device, 10, "Network Scan");
     }
     portActivity.delete(device);
   }

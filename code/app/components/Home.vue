@@ -6,10 +6,15 @@
     </ActionBar>
 
     <StackLayout>
-      <Label :visibility="tcpStarted ? 'collapse' : 'visible'" text="The tcpdump worker didn't run. Press the following button to manually launch it and scan packets."/>
-      <Button :visibility="tcpStarted ? 'collapse' : 'visible'" text="Scan Packets" @tap="scanPackets"/>
-      <Label :visibility="nmapStarted ? 'collapse' : 'visible'" text="The nmap worker didn't run. Press the following button to manually scan the list of devices on the network."/>
-      <Button text="Scan Network" @tap="scanDevices"/>
+      <template v-if="!tcpStarted">
+        <Label  text="The tcpdump worker didn't run. Press the 'Scan Packets' button to manually launch it and scan packets." />
+        <Button text="Scan Packets" @tap="scanPackets" />
+      </template>
+      <template v-if="!nmapStarted">
+        <Label text="The nmap worker didn't run. Press the 'Scan Network' button to manually scan the list of devices on the network." />
+      </template>
+
+      <Button text="Scan Network" @tap="scanDevices" />
       <RadPieChart allowAnimation="true" height="200"> <!-- pie chart showing threat stats -->
         <DonutSeries v-tkPieSeries
                      selectionMode="DataPoint"
@@ -29,6 +34,8 @@
         </Palette>
         <RadLegendView v-tkPieLegend position="Right" title="" offsetOrigin="TopRight" width="110"/>
       </RadPieChart>
+
+      <ActivityIndicator v-if="!(scanlist.length)" :busy="true" />
 
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
@@ -130,7 +137,8 @@
       },
 
       scanDevices(){
-        nmpw.postMessage({})
+        globalState.scanlist=[];
+        nmpw.postMessage({});
       },
       scanPackets() {
         tcpw.postMessage({})

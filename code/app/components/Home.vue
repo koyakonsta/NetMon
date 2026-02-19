@@ -10,6 +10,26 @@
       <Button :visibility="tcpStarted ? 'collapse' : 'visible'" text="Scan Packets" @tap="scanPackets"/>
       <Label :visibility="nmapStarted ? 'collapse' : 'visible'" text="The nmap worker didn't run. Press the following button to manually scan the list of devices on the network."/>
       <Button text="Scan Network" @tap="scanDevices"/>
+      <RadPieChart allowAnimation="true" height="200"> <!-- pie chart showing threat stats -->
+        <DonutSeries v-tkPieSeries
+                     selectionMode="DataPoint"
+                     seriesName="pal"
+                     paletteMode="DataPoint"
+                     expandRadius="0.4"
+                     outerRadiusFactor="0.7"
+                     innerRadiusFactor="0.4"
+                     valueProperty="count"
+                     legendLabel="type"
+                     :items="threatStats"/>
+
+        <Palette tkPiePalette seriesName="pal">
+          <PaletteEntry tkPiePaletteEntry fillColor="blue" strokeColor="blue"/>
+          <PaletteEntry tkPiePaletteEntry fillColor="red" strokeColor="red"/>
+          <PaletteEntry tkPiePaletteEntry fillColor="yellow" strokeColor="yellow"/>
+        </Palette>
+        <RadLegendView v-tkPieLegend position="Right" title="" offsetOrigin="TopRight" width="110"/>
+      </RadPieChart>
+
       <ListView :items="scanlist" class="list">
         <v-template v-slot="{ item }">
           <GridLayout columns="*,*" rows="auto,auto,auto">
@@ -75,6 +95,16 @@
       tcpStarted() {
         return globalState.tcpStarted;
       },
+      threatStats(){
+        const unsafe = globalState.scanlist.filter(_ => !(_.isSafe)).length;
+        const safe = globalState.scanlist.filter(_ => _.isSafe).length;
+        const potential = globalState.scanlist.filter(_ => (_.riskScore>0 && _.isSafe) ).length;
+        return [
+            {'type':"Unsafe", 'count':(unsafe), 'color': 'red'},
+            {'type':"Safe", 'count':(safe), 'color': 'green'},
+            {'type':"Potential Threat", 'count':(potential), 'color': 'green'}
+        ]
+      }
     },
     data() {
       return {

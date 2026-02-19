@@ -17,7 +17,7 @@ export interface NmapHost {
     hostname: { name: string; type: string }[];
   };
   vendor: string | null | undefined;
-  riskScore: Number;
+  riskScore: number;
   isSafe: boolean;
 }
 

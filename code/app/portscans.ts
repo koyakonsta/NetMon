@@ -25,14 +25,15 @@ function SYN_tick(){ //call every 10sec to test for suspicious activity and clea
       console.warn("Device " + device + " sent " + activities.length +  " SYN requests in 10 seconds.");
       addRiskScore(device, 10);
     }
-    activities = [];
+    portActivity.delete(device);
   }
   // TODO: Add additional tests for cases of >10 unique ports or >10 unique hosts
 }
 
 export function tick_start(){
-  if (tick_id==null)
-    tick_id = setInterval(SYN_tick, 10*1000); // setup up and run tick if not already started
+  if (tick_id==null) {
+    tick_id = setInterval(SYN_tick, 10 * 1000); // setup up and run tick if not already started
+  }
 }
 tick_start();
 

@@ -173,18 +173,4 @@ export function addRiskScore(address: string, points: number) {
   if (device!=null) {
     device.riskScore = (device.riskScore??0) + points;
   }
-  // let device;
-  // for (const currDevice of globalState.scanlist) {
-  //   if (device) { break; }
-  //   for (const currAddress of currDevice.address) {
-  //     if (currAddress.addr == address) {
-  //       device = currDevice;
-  //       break;
-  //     }
-  //   }
-  // }
-  //
-  // if (device) {
-  //   device.riskScore += points;
-  // }
 }

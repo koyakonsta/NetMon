@@ -4,19 +4,6 @@ import {addRiskScore, getTimestamp, packetHeader} from "~/packets";
 const portActivity = new Map<string, { port: number, host: string, timestamp: number }[]>;
 let tick_id: number | null;
 
-function discardOldData() {
-  const currentTimestamp = Date.now() / 1000;
-  for (const [device, activities] of portActivity.entries()) {
-    const filteredActivities = activities.filter((activity) => (currentTimestamp - activity.timestamp) < 10);
-
-    if (filteredActivities.length === 0) {
-      portActivity.delete(device);
-    } else {
-      portActivity.set(device, filteredActivities);
-    }
-  }
-}
-
 function SYN_tick(){ //call every 10sec to test for suspicious activity and clear port activity entries
   for (let [device, activities] of portActivity.entries()) {
     if (activities.length >= 20) {

@@ -157,7 +157,7 @@ function getARP(){
         ip: parts[0],
         hwType: parts[1],
         flags: parts[2],
-        mac: parts[3].toLowerCase(),
+        mac: padMACAddr(parts[3].toLowerCase()),
         mask: parts[4],
         device: parts[5]
       });

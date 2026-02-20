@@ -146,7 +146,23 @@ The application should have been able to allow the user to configure scan freque
 However, this was not implemented and the application uses reasonable defaults instead.
 
 ## 3. System Architecture
-...
+The system architecture, as implemented, consists of three main subsystems: the GUI, the backend, and local storage. 
+
+The subsystems interact as such: Storage <=> Backend <=> to deliver the core functionality to the user. 
+
+![Diagram](./images/diag.png)
+
+The GUI is the user-facing presentation of the app functions and interface seen when using the application.
+the backend performs network monitoring to filter packets, generate threat events as necessary and
+the storage stores network logs.
+The GUI is the client side of the application, implemented using NativeScript-Vue. This is what the
+user interacts with when using the application. It allows the user to use the app’s functionality in a
+user-friendly way. User inputs go through the GUI, which then passes these interactions to the backend
+to process them and store any results.
+The backend monitors the network to detect new devices and check for any suspicious activity. This analysis is
+ implemented with an assemblage of prebuilt binaries, TypeScript modules and helper functions. The backend processes any input from the GUI and, where
+relevant, sends the results back to it. The backend communicates with the storage to store log entires. 
+
 
 ## 4. High-Level Design
 ...

@@ -19,10 +19,13 @@ Authors: Regaus (***REMOVED***) and koyakonsta (***REMOVED***)
    2.10 [User Interface and Dashboard](#210-user-interface-and-dashboard)<br>
    2.11 [Background Monitoring](#211-background-monitoring)<br>
    2.12 [Import/Export Device Lists](#212-importexport-device-lists)<br>
-   2.13 [Settings and Configuration](#213-settings-and-configuration)<br>
+   2.13 [Settings and Configuration](#213-settings-and-configuration)
 3. [System Architecture](#3-system-architecture)
 4. [High-Level Design](#4-high-level-design)
-5. [Problems and Resolutions](#5-problems-and-resolutions)
+5. [Problems and Resolutions](#5-problems-and-resolutions)<br>
+   5.1 [Process Execution](#51-process-execution)<br>
+   5.2 [Root Access](#52-root-access)<br>
+   5.3 [Background Processes Not Starting](#53-background-processes-not-starting)<br>
 6. [Installation Guide](#6-installation-guide)
 
 ## 1. Introduction
@@ -145,7 +148,24 @@ However, this was not implemented and the application uses reasonable defaults i
 ...
 
 ## 5. Problems and Resolutions
-...
+### 5.1 Process Execution
+The application depends on `nmap` and `tcpdump` shell utilities, which are not included with Android, and therefore have to be shipped with the application.
+
+We included the related binaries as libraries, with versions for ARM and x86 CPU architectures, which means it can run both on an actual device and a virtual one.
+
+Android is pretty strict about applications starting processes, but we eventually found a way to launch them.
+
+### 5.2 Root Access
+Android is quite strict about non-root users can access. As such, `nmap` and `tcpdump` have to be executed as root to gain full access to sending and receiving raw network packets.
+This allows the network analysis to work as intended.
+
+As a result, the application requires root access to run.
+
+### 5.3 Background Processes Not Starting
+Sometimes, the `nmap` and `tcpdump` workers would not actually start, which means that the application wouldn't be able to function properly.
+
+While we haven't been able to identify the root cause of the workers not starting up, we made them send a "ready" message when they are launched.
+As such, until such a message is received, the home page UI has a button that allows the user to manually start the background processes.
 
 ## 6. Installation Guide
 ...

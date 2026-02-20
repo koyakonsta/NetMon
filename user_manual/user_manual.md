@@ -7,6 +7,7 @@ Authors: Regaus (***REMOVED***) and koyakonsta (***REMOVED***)
    1.1 [Accessing the App](#11-accessing-the-app)
 2. [Scanning the Network](#2-scanning-the-network)
 3. [Threat Detection](#3-threat-detection)
+4. [Accessing Threat Logs](#4-accessing-threat-logs)
 
 ## 1. Overview
 The purpose of this user manual is to help an application user navigate and understand the features of the Network Monitor app.
@@ -16,7 +17,9 @@ This manual will go over the major features of Network Monitor, such as detectin
 
 ### 1.1 Accessing the App
 To open Network Monitor, you can install the application from an APK file.
-If you have the source code, you can also open a terminal in the `code` directory and run `npm install` and `ns run android`.
+If you have the source code and an Android virtual device, you can also open a terminal in the `code` directory and run `npm install` and `ns run android`.
+
+**Note:** The device running the application has to be rooted.
 
 Upon opening, you are greeted with the home screen that shows the list of devices connected to your network.
 The network and packet scanners should start automatically upon opening the application, but a button will appear if it didn't work for any reason.
@@ -39,3 +42,9 @@ This means that the device is performing a "port scan" or a "network scan". It m
 
 Similarly, the app will alert the user if it detects suspicious ARP requests and/or responses coming from a device.
 This indicates an "ARP spoofing" or "ARP poisoning" attack, and is usually done for man-in-the-middle attacks where a device pretends to be the router to interfere with the network's traffic.
+
+## 4. Accessing Threat Logs
+It is possible to view the logs of all past threat events by pressing "Logs" in the top right corner of the homepage.
+
+All threat events are logged with some further detail about each, such as the hosts the device connected to or the mismatched MAC/IP addresses in the ARP table.
+There are buttons at the bottom of the screen which allow the user to refresh the log file and to clear its contents.

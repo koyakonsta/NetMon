@@ -43,6 +43,14 @@ This means that the device is performing a "port scan" or a "network scan". It m
 Similarly, the app will alert the user if it detects suspicious ARP requests and/or responses coming from a device.
 This indicates an "ARP spoofing" or "ARP poisoning" attack, and is usually done for man-in-the-middle attacks where a device pretends to be the router to interfere with the network's traffic.
 
+### 3.1 Threat Event Notifications
+Whenever a potential threat is detected, the application sends a notification to the user.
+These notifications include the threat type and a brief description of what happened.
+
+Each notification has two buttons:
+- "Mark Unsafe" - Marks the device as suspicious
+- "Dismiss" - Do nothing
+
 ## 4. Accessing Threat Logs
 It is possible to view the logs of all past threat events by pressing "Logs" in the top right corner of the homepage.
 

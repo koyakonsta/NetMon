@@ -113,7 +113,7 @@
       },
       threatStats(){
         const unsafe = globalState.scanlist.filter(_ => !(_.isSafe)).length;
-        const safe = globalState.scanlist.filter(_ => _.isSafe).length;
+        const safe = globalState.scanlist.filter(_ => (_.riskScore==0 && _.isSafe)).length;
         const potential = globalState.scanlist.filter(_ => (_.riskScore>0 && _.isSafe) ).length;
         return [
             {'type':"Safe", 'count':(safe)},

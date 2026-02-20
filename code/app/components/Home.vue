@@ -63,6 +63,7 @@
 
 <script lang="ts">
   import Vue from "nativescript-vue";
+  import { LocalNotifications } from '@nativescript/local-notifications'
   import Config from "@/components/Config.vue";
   import {globalState} from "~/store";
   import * as netutils from "~/netutils";
@@ -162,6 +163,9 @@
 
     mounted() {
       if (!started) {
+        LocalNotifications.requestPermission().then(granted => {
+          console.log("Permission:", granted);
+        });
         console.log("Starting workers...")
         nmpw.postMessage({});
         tcpw.postMessage({});

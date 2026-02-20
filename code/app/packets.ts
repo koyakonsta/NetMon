@@ -1,6 +1,7 @@
 import {storeSYNInfo} from "~/portscans";
 import {globalState} from "~/store";
 import {getVendor} from "~/netutils";
+import {LocalNotifications} from "@nativescript/local-notifications/index.android";
 
 export interface packetHeader {
   timestampSeconds: number;
@@ -174,4 +175,21 @@ export function addRiskScore(address: string, points: number, reason?:string) {
     device.riskScore = (device.riskScore??0) + points;
     if (reason) device.threats = new Set([...(device.threats||[]), reason])
   }
+}
+
+export function sendNotification(title: string, body: string) {
+  LocalNotifications.schedule([{
+    id: 1,
+    title: title,
+    body: body,
+    ticker: "Security Warning",
+    priority: 2, // high
+  }]).then(
+    (scheduledIds) => {
+      console.log('Notification id(s) scheduled: ' + JSON.stringify(scheduledIds))
+    },
+    (error) => {
+      console.log('scheduling error: ' + error)
+    },
+  );
 }

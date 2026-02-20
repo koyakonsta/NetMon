@@ -8,6 +8,7 @@ export const globalState : {
     tcpStarted: boolean,
     selectedInterface: string | null,
     networkInterfaces: string[],
+    threatLogContents: string,
   } = Vue.observable(
   {
     scanlist: [],
@@ -16,5 +17,6 @@ export const globalState : {
     tcpStarted: false,
     selectedInterface: null,
     networkInterfaces: [],
+    threatLogContents: "",
   }
 );

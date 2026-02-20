@@ -6,7 +6,6 @@ context.onmessage = (msg: MessageEvent<string>) => {
   const context = Utils.ad.getApplicationContext();
   const filesDir = context.getFilesDir().getAbsolutePath();
   const filename = `${filesDir}/threats.log`;
-  console.log(filename);
   const file = File.fromPath(filename);
   const output = new Date(Date.now()).toISOString() + " > " + msg.data + "\n";
   file.appendTextSync(output, (err: any) => {

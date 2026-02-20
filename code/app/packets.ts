@@ -1,6 +1,7 @@
 import {storeSYNInfo} from "~/portscans";
 import {globalState} from "~/store";
 import {getVendor} from "~/netutils";
+import {sendNotification} from "~/notifications";
 
 export interface packetHeader {
   timestampSeconds: number;
@@ -92,18 +93,23 @@ export function analyseARP(header: packetHeader, packet: number[]){
   console.log(`received ARP Packet from ${sender_HWAddress}/${sender_ProtocolAddress} to ${target_HWAddress}/${target_ProtocolAddress}`);
 
   let device = findDevice(sender_HWAddress)
-  if (!globalState.scanlist.some(host => host.address.some(addr => addr.addr==sender_HWAddress))){ //if sender not in scanlist
-    //add to scanlist
-    globalState.scanlist.push({
-      status:{state:'up'},
-      address:[
-        {addr: sender_HWAddress, addrtype:'mac'},
-        {addr: sender_ProtocolAddress, addrtype:'ipv4'}
-      ],
-      vendor:getVendor(sender_HWAddress, 'None'),
-      riskScore:0,
-      isSafe:true
-    });
+  if (!device) {
+    let device = findDevice(sender_ProtocolAddress) // Try to find device by its IP address instead
+    if (!device) {
+      globalState.scanlist.push({
+        status: {state:'up'},
+        address: [
+          {addr: sender_HWAddress, addrtype:'mac'},
+          {addr: sender_ProtocolAddress, addrtype:'ipv4'}
+        ],
+        vendor: getVendor(sender_HWAddress, 'None'),
+        riskScore: 0,
+        isSafe: true,
+      })
+    } else {
+      device.address.push({addr: sender_HWAddress, addrtype:'mac'});
+      device.vendor = getVendor(sender_HWAddress, 'None');
+    }
   }
 
 
@@ -115,8 +121,8 @@ export function analyseARP(header: packetHeader, packet: number[]){
         if ((arpDev!=null)&&(arpDev!==sender_HWAddress)) {
           //if entry already exists in arp table but with different MAC-IP pair, flag
           console.warn("Device " + sender_HWAddress + " made potential ARP poisoning attempt");
+          sendNotification("Possible ARP Poisoning attempt detected", "The device " + sender_HWAddress + " sent an ARP reply for a MAC-IP pair that differs from the ARP table.", sender_HWAddress);
           addRiskScore(sender_HWAddress, 10, 'ARP Poisoning');
-
         }
       }
     }

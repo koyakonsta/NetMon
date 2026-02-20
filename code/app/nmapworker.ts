@@ -35,7 +35,7 @@ context.onmessage = (_: any) => {
     // parse xml
     let hosts = xmlToJson.nmaprun?.host || [];
     //add vendor mac lookup
-    hosts = hosts.map(h => ({...h, vendor:getVendor(h.address.find(i => i.addrtype=='mac')?.addr??"", "N/A")}));
+    hosts = hosts.map(h => ({...h, vendor:getVendor(h.address.find(i => i.addrtype=='mac')?.addr??"", "None")}));
     hosts = hosts.map(h => ({...h, riskScore: 0, isSafe: true}));
     hosts = hosts.map(h => ({...h, address:h.address.map(a=>({...a,addr:a.addr.toLowerCase()}))}));
 

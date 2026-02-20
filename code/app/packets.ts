@@ -2,6 +2,7 @@ import {storeSYNInfo} from "~/portscans";
 import {globalState} from "~/store";
 import {getVendor} from "~/netutils";
 import {sendNotification} from "~/notifications";
+const logger = new Worker('~/threatlog.ts');
 
 export interface packetHeader {
   timestampSeconds: number;
@@ -107,8 +108,10 @@ export function analyseARP(header: packetHeader, packet: number[]){
         isSafe: true,
       })
     } else {
-      device.address.push({addr: sender_HWAddress, addrtype:'mac'});
-      device.vendor = getVendor(sender_HWAddress, 'None');
+      if (!device.address.some(_ => _.addrtype=="mac")) {
+        device.address.push({addr: sender_HWAddress, addrtype:'mac'});
+        device.vendor = getVendor(sender_HWAddress, 'None');
+      }
     }
   }
 
@@ -120,9 +123,12 @@ export function analyseARP(header: packetHeader, packet: number[]){
         let arpDev = arpTable?.find(entry => entry.ip==sender_ProtocolAddress)?.mac;
         if ((arpDev!=null)&&(arpDev!==sender_HWAddress)) {
           //if entry already exists in arp table but with different MAC-IP pair, flag
-          console.warn("Device " + sender_HWAddress + " made potential ARP poisoning attempt");
-          sendNotification("Possible ARP Poisoning attempt detected", "The device " + sender_HWAddress + " sent an ARP reply for a MAC-IP pair that differs from the ARP table.", sender_HWAddress);
+          const message = "Device " + sender_HWAddress + " made potential ARP poisoning attempt";
+          console.warn(message);
+          sendNotification("Possible ARP Poisoning attempt detected", message, sender_HWAddress);
           addRiskScore(sender_HWAddress, 10, 'ARP Poisoning');
+          logger.postMessage(message)
+          logger.postMessage("The IP address " + sender_ProtocolAddress + " is associated with " + arpDev + ", not " + sender_HWAddress + "\n");
         }
       }
     }

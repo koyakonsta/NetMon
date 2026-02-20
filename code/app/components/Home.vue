@@ -2,7 +2,7 @@
   <Page>
     <ActionBar>
       <Label text="Home" class="font-bold text-lg"/>
-      <ActionItem text="Config" android.position="actionBar" @tap="goToConfig"/>
+<!--      <ActionItem text="Config" android.position="actionBar" @tap="goToConfig"/>-->
       <ActionItem text="Log" android.position="actionBar" @tap="goToLog"/>
     </ActionBar>
 
@@ -65,7 +65,7 @@
 <script lang="ts">
   import Vue from "nativescript-vue";
   import { LocalNotifications } from '@nativescript/local-notifications'
-  import Config from "@/components/Config.vue";
+  // import Config from "@/components/Config.vue";
   import Log from "@/components/Log.vue";
   import {globalState} from "~/store";
   import * as netutils from "~/netutils";
@@ -130,13 +130,12 @@
       }
     },
     methods: {
-      goToConfig(){
-        this.$navigateTo(Config);
-      },
+      // goToConfig(){
+      //   this.$navigateTo(Config);
+      // },
       goToLog() {
         this.$navigateTo(Log);
       },
-
       getClass(device: NmapHost) {
         return device.isSafe ? (device.riskScore>0 ? "potentially-unsafe" : "safe") : "unsafe";
       },

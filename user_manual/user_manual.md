@@ -16,8 +16,8 @@ The app is used to detect any suspicious activity on the current network, so tha
 This manual will go over the major features of Network Monitor, such as detecting the devices connected to the network and threat detection.
 
 ### 1.1 Accessing the App
-To open Network Monitor, you can install the application from an APK file.
-If you have the source code and an Android virtual device, you can also open a terminal in the `code` directory and run `npm install` and `ns run android`.
+There is an APK file at `app.apk` in the root directory of this repository, which you can install on your device.
+If you want to build the Network Monitor yourself, the build process is outlined in the [Technical Specification](../technical_manual/technical_spec.md).
 
 **Note:** The device running the application has to be rooted.
 
@@ -42,6 +42,14 @@ This means that the device is performing a "port scan" or a "network scan". It m
 
 Similarly, the app will alert the user if it detects suspicious ARP requests and/or responses coming from a device.
 This indicates an "ARP spoofing" or "ARP poisoning" attack, and is usually done for man-in-the-middle attacks where a device pretends to be the router to interfere with the network's traffic.
+
+### 3.1 Threat Event Notifications
+Whenever a potential threat is detected, the application sends a notification to the user.
+These notifications include the threat type and a brief description of what happened.
+
+Each notification has two buttons:
+- "Mark Unsafe" - Marks the device as suspicious
+- "Dismiss" - Do nothing
 
 ## 4. Accessing Threat Logs
 It is possible to view the logs of all past threat events by pressing "Logs" in the top right corner of the homepage.

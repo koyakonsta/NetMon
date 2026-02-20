@@ -3,7 +3,6 @@ import {markDeviceUnsafe} from "~/packets";
 
 export function sendNotification(title: string, body: string, deviceAddress: string) {
   LocalNotifications.schedule([{
-    id: 1,
     title: title,
     body: body,
     ticker: "Security Warning",

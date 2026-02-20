@@ -6,15 +6,33 @@ const portActivity = new Map<string, { port: number, host: string, timestamp: nu
 let tick_id: number | null;
 
 function SYN_tick(){ //call every 10sec to test for suspicious activity and clear port activity entries
-  for (let [device, activities] of portActivity.entries()) {
-    if (activities.length >= 20) {
-      console.warn("Device " + device + " sent " + activities.length +  " SYN requests in 10 seconds.");
-      sendNotification("Network Scan Detected", ("The device with IP " + device + " sent " + activities.length +  " SYN requests in 10 seconds."), device)
+  for (const [device, activities] of portActivity.entries()) {
+    if (activities.length >= 40) {
+      const message = "Device " + device + " sent " + activities.length +  " SYN requests in 10 seconds.";
+      console.warn(message);
+      sendNotification("Network Scan Detected", message, device);
       addRiskScore(device, 10, "Network Scan");
+    }
+    const portSet = new Set<number>;
+    const hostSet = new Set<string>;
+    for (const activity of activities) {
+      portSet.add(activity.port);
+      hostSet.add(activity.host);
+    }
+    if (portSet.size >= 10) {
+      const message = "Device " + device + " sent requests to " + portSet.size + " ports within 10 seconds.";
+      console.warn(message);
+      sendNotification("Port Scan Detected", message, device);
+      addRiskScore(device, 10, "Port Scan");
+    }
+    if (hostSet.size >= 10) {
+      const message = "Device " + device + " sent requests to " + hostSet.size + " hosts within 10 seconds.";
+      console.warn(message);
+      sendNotification("Ping Sweep Detected", message, device);
+      addRiskScore(device, 10, "Ping Sweep");
     }
     portActivity.delete(device);
   }
-  // TODO: Add additional tests for cases of >10 unique ports or >10 unique hosts
 }
 
 export function tick_start(){

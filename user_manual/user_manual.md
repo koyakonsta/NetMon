@@ -16,8 +16,8 @@ The app is used to detect any suspicious activity on the current network, so tha
 This manual will go over the major features of Network Monitor, such as detecting the devices connected to the network and threat detection.
 
 ### 1.1 Accessing the App
-To open Network Monitor, you can install the application from an APK file.
-If you have the source code and an Android virtual device, you can also open a terminal in the `code` directory and run `npm install` and `ns run android`.
+There is an APK file at `app.apk` in the root directory of this repository, which you can install on your device.
+If you want to build the Network Monitor yourself, the build process is outlined in the [Technical Specification](../technical_manual/technical_spec.md).
 
 **Note:** The device running the application has to be rooted.
 

@@ -174,6 +174,8 @@ As such, until such a message is received, the home page UI has a button that al
 ## 6. Installation Guide
 This guide details the process of running Network Monitor on the local machine.
 
+If you don't want to build the application, there is an APK file included as `app.apk` at the root directory of this repository.
+
 ### 6.1 Prerequisites
 Software requirements:
 - Node.js (we used version 24.13.0)

@@ -25,8 +25,12 @@ Authors: Regaus (***REMOVED***) and koyakonsta (***REMOVED***)
 5. [Problems and Resolutions](#5-problems-and-resolutions)<br>
    5.1 [Process Execution](#51-process-execution)<br>
    5.2 [Root Access](#52-root-access)<br>
-   5.3 [Background Processes Not Starting](#53-background-processes-not-starting)<br>
-6. [Installation Guide](#6-installation-guide)
+   5.3 [Background Processes Not Starting](#53-background-processes-not-starting)
+6. [Installation Guide](#6-installation-guide)<br>
+   6.1 [Prerequisites](#61-prerequisites)<br>
+   6.2 [Installing Dependencies](#62-installing-dependencies)<br>
+   6.3 [Running on a Virtual Device](#63-running-on-a-virtual-device)<br>
+   6.4 [Installing and Running on a Physical Device](#64-installing-and-running-on-a-physical-device)
 
 ## 1. Introduction
 ### 1.1 Overview
@@ -168,4 +172,51 @@ While we haven't been able to identify the root cause of the workers not startin
 As such, until such a message is received, the home page UI has a button that allows the user to manually start the background processes.
 
 ## 6. Installation Guide
-...
+This guide details the process of running Network Monitor on the local machine.
+
+### 6.1 Prerequisites
+Software requirements:
+- Node.js (we used version 24.13.0)
+- npm (we used version 11.6.2)
+- An Android virtual device
+
+*If you have Android Studio installed, you can create a new virtual device (emulator) as using [this guide](https://developer.android.com/studio/run/managing-avds).*
+
+Hardware requirements:
+- Any major operating system
+- ~4 GB of free disk space
+- An internet connection
+
+### 6.2 Installing Dependencies
+First, you need to clone the repository to have all the source code and other necessary files.
+This can be done using:
+```bash
+git clone https://gitlab.computing.dcu.ie/ivanovp2/2026-csc1049-pivanov-networkmonitor.git
+```
+
+The application uses NativeScript with Vue. To install that and all other dependencies, run the following commands:
+```bash
+cd code
+npm install
+```
+
+### 6.3 Running on a Virtual Device
+If you don't already have a virtual device, you can create one using [Android Studio](https://developer.android.com/studio/install).
+
+Once you have the dependencies and a virtual device ready, you can run the following command:
+```bash
+cd code
+ns run android
+```
+
+This will automatically launch the virtual device, build the application, and install and run it on the device.
+
+### 6.4 Installing and Running on a Physical Device
+To build an APK file, run the following command:
+```bash
+cd code
+ns build android
+```
+
+This builds an APK file which is located in `code/platforms/android/app/build/outputs/apk/debug/app-debug.apk`.
+You can then copy and install this file on your device.

@@ -9,19 +9,13 @@ export interface packetHeader {
   originalLength: number;
 }
 
-function padMACAddr(mac:string) {
-  return mac.split(':')
-    .map(b => b ? b.padStart(2, '0').toLowerCase() : '00')
-    .join(':');
-}
-
 export function getTimestamp(header: packetHeader): number {
   return header.timestampSeconds + header.timestampMicroseconds / 1000000;
 }
 
 function macToString(address: number[]): string {
   return address.map((value, _1, _2) => {
-    return value.toString(16);
+    return value.toString(16).padStart(2, '0').toLowerCase();
   }).join(":");
 }
 
@@ -91,12 +85,13 @@ export function analyseARP(header: packetHeader, packet: number[]){
   const HWLength = packet[4];
   const ProtocolLength = packet[5];
   const Operation = (packet[6]<<8) + packet[7];
-  const sender_HWAddress = padMACAddr( macToString( packet.slice(8, 8+HWLength)).toLowerCase());
+  const sender_HWAddress = macToString( packet.slice(8, 8+HWLength)).toLowerCase();
   const sender_ProtocolAddress = ipToString(packet.slice(8+HWLength, 8+HWLength+ProtocolLength));
   const target_HWAddress = macToString(packet.slice(8+HWLength+ProtocolLength, 8+2*HWLength+ProtocolLength));
   const target_ProtocolAddress = ipToString(packet.slice(8+2*HWLength+ProtocolLength, 8+2*HWLength+2*ProtocolLength));
   console.log(`received ARP Packet from ${sender_HWAddress}/${sender_ProtocolAddress} to ${target_HWAddress}/${target_ProtocolAddress}`);
 
+  let device = findDevice(sender_HWAddress)
   if (!globalState.scanlist.some(host => host.address.some(addr => addr.addr==sender_HWAddress))){ //if sender not in scanlist
     //add to scanlist
     globalState.scanlist.push({
@@ -157,7 +152,7 @@ function getARP(){
         ip: parts[0],
         hwType: parts[1],
         flags: parts[2],
-        mac: padMACAddr(parts[3].toLowerCase()),
+        mac: parts[3],
         mask: parts[4],
         device: parts[5]
       });

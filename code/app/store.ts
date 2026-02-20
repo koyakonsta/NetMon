@@ -15,7 +15,7 @@ export const globalState : {
     portBehaviour: {},
     nmapStarted: false,
     tcpStarted: false,
-    selectedInterface: null,
+    selectedInterface: 'wlan0',
     networkInterfaces: [],
     threatLogContents: "",
   }

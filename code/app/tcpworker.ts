@@ -1,4 +1,6 @@
 import "@nativescript/core/globals";
+import {globalState} from "~/store";
+
 const context: Worker = self as any;
 
 const _self = (self as any);
@@ -28,7 +30,7 @@ context.onmessage = (_: any) => {
     const libDir = context.getApplicationInfo().nativeLibraryDir;
     const tcpDumpPath = `${libDir}/libtcpdump.so`
 
-    const command = `killall libtcpdump.so > /dev/null; ${tcpDumpPath} -i wlan0 -n -U -w -`; //make fifo and write in tcpdump packets
+    const command = `killall libtcpdump.so > /dev/null; ${tcpDumpPath} -i ${globalState.selectedInterface??'wlan0'} -n -U -w -`; //make fifo and write in tcpdump packets
     const process = java.lang.Runtime.getRuntime().exec("su");
     const os = new java.io.DataOutputStream(process.getOutputStream())
     os.writeBytes(`${command}\n`); os.flush(); //exec

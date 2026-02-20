@@ -1,4 +1,5 @@
-import {addRiskScore, getTimestamp, packetHeader, sendNotification} from "~/packets";
+import {addRiskScore, getTimestamp, packetHeader} from "~/packets";
+import {sendNotification} from "~/notifications";
 
 // portActivity[sourceIP] = [{port, host, timestamp}]
 const portActivity = new Map<string, { port: number, host: string, timestamp: number }[]>;
@@ -8,7 +9,7 @@ function SYN_tick(){ //call every 10sec to test for suspicious activity and clea
   for (let [device, activities] of portActivity.entries()) {
     if (activities.length >= 20) {
       console.warn("Device " + device + " sent " + activities.length +  " SYN requests in 10 seconds.");
-      sendNotification("Network Scan Detected", ("The device with IP " + device + " sent " + activities.length +  " SYN requests in 10 seconds."))
+      sendNotification("Network Scan Detected", ("The device with IP " + device + " sent " + activities.length +  " SYN requests in 10 seconds."), device)
       addRiskScore(device, 10, "Network Scan");
     }
     portActivity.delete(device);
